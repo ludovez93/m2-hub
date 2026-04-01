@@ -69,22 +69,22 @@
       return `
         <div class="home-hero">
           <h1>M2 Railgroup</h1>
-          <p>Knowledge Hub — Cerca qualsiasi cosa</p>
+          <p>Knowledge Hub</p>
         </div>
         <div class="sections-grid">
           ${categories.map(cat => {
             const count = M2_DATA.filter(d => d.categoryId === cat.id).length;
             return `
-              <a class="section-card" onclick="app.navigate('${cat.id}')">
-                <span class="card-icon">${cat.icon}</span>
+              <a class="section-card" data-section="${cat.id}" onclick="app.navigate('${cat.id}')">
+                <div class="card-icon">${cat.svgIcon}</div>
                 <div class="card-title">${cat.title}</div>
                 <div class="card-desc">${cat.subtitle}</div>
               </a>
             `;
           }).join('')}
         </div>
-        <div style="margin-top: 32px;">
-          <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">Ultimi contenuti</h3>
+        <div style="margin-top: 28px;">
+          <div class="section-label">Recenti</div>
           ${this.renderContentList(M2_DATA.slice(0, 5))}
         </div>
       `;
@@ -102,7 +102,7 @@
         const subItems = items.filter(i => i.subcategory === sub);
         return `
           <div class="subsection-item" onclick="app.navigate('${categoryId}/${encodeURIComponent(sub)}')">
-            <span class="sub-icon">${cat.icon}</span>
+            <span class="sub-icon">${SVG_ICONS.folder}</span>
             <div class="sub-info">
               <div class="sub-title">${sub}</div>
               <div class="sub-desc">${subItems.length} documenti</div>
@@ -117,7 +117,7 @@
           <button class="back-btn" onclick="app.navigate('home')">
             \u2190 Home
           </button>
-          <h1>${cat.icon} ${cat.title}</h1>
+          <h1>${cat.title}</h1>
           <p>${cat.subtitle} — ${items.length} documenti totali</p>
         </div>
         <div class="subsection-list">
@@ -172,9 +172,46 @@
 
     // ===== DETAIL (placeholder) =====
 
-    showDetail(id) {
+    showDetail(id, searchTerm) {
       const item = M2_DATA.find(d => d.id === id);
       if (!item) return;
+
+      // Aggiungi termine di ricerca all'URL del PDF per evidenziarlo
+      const pdfHref = item.pdfUrl
+        ? (searchTerm
+            ? `${item.pdfUrl}#search=${encodeURIComponent(searchTerm)}`
+            : item.pdfUrl)
+        : '';
+
+      const pdfButton = item.pdfUrl ? `
+        <a href="${pdfHref}" target="_blank" style="
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: var(--accent);
+          color: #fff;
+          text-decoration: none;
+          padding: 14px 20px;
+          border-radius: var(--radius-sm);
+          font-size: 14px;
+          font-weight: 700;
+          margin-top: 16px;
+          transition: opacity 0.15s;
+        " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <polyline points="9 15 12 18 15 15"/>
+          </svg>
+          Apri documento completo — ${item.pdfName}
+        </a>
+      ` : '';
+
+      const contentFormatted = item.content
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/•/g, '<span style="color:var(--accent-light)">•</span>');
 
       const main = document.getElementById('main-content');
       main.innerHTML = `
@@ -193,13 +230,16 @@
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 24px;
+          padding: 20px;
           margin-top: 16px;
-          line-height: 1.6;
+          line-height: 1.7;
           color: var(--text-secondary);
+          font-size: 13px;
+          white-space: pre-line;
         ">
-          ${item.content}
+          <p>${contentFormatted}</p>
         </div>
+        ${pdfButton}
       `;
       main.classList.remove('fade-in');
       void main.offsetWidth;
@@ -259,7 +299,7 @@
       }
 
       resultsBody.innerHTML = results.map(item => `
-        <div class="search-result-item" onclick="app.showDetail('${item.id}'); app.closeSearch();">
+        <div class="search-result-item" onclick="app.showDetail('${item.id}', '${query.replace(/'/g, "\\'")}'); app.closeSearch();">
           <div class="result-category">
             <span class="badge ${M2_CATEGORIES[item.categoryId]?.badgeClass || ''}">${item.category}</span>
             &middot; ${item.subcategory}
