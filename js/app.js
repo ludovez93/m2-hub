@@ -176,12 +176,13 @@
       const item = M2_DATA.find(d => d.id === id);
       if (!item) return;
 
-      // Aggiungi termine di ricerca all'URL del PDF per evidenziarlo
+      // Aggiungi termine di ricerca all'URL del PDF (#search= per Chrome PDF viewer)
       const pdfHref = item.pdfUrl
         ? (searchTerm
             ? `${item.pdfUrl}#search=${encodeURIComponent(searchTerm)}`
             : item.pdfUrl)
         : '';
+      const searchHint = searchTerm ? `<div style="color:var(--text-muted);font-size:11px;margin-top:8px;">Cerca nel PDF: <strong style="color:var(--accent-light)">${this._escapeHtml(searchTerm)}</strong> — usa Ctrl+F se non evidenziato automaticamente</div>` : '';
 
       const pdfButton = item.pdfUrl ? `
         <a href="${pdfHref}" target="_blank" style="
@@ -240,6 +241,7 @@
           <p>${contentFormatted}</p>
         </div>
         ${pdfButton}
+        ${searchHint}
       `;
       main.classList.remove('fade-in');
       void main.offsetWidth;
