@@ -1,0 +1,17 @@
+{
+  "name": "M2 Railgroup Hub",
+  "short_name": "M2 Hub",
+  "description": "Knowledge Hub aziendale M2 Railgroup",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
